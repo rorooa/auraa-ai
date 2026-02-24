@@ -1,138 +1,87 @@
 
-# 🎭 Emotion Companion AI
+# 🎭 AURAA: Emotion-Aware AI Companion
 
-> **An interactive AI that sees, hears, and empathizes with you.**
+> **A mirror for your soul. A voice for your thoughts. A digital companion that understands.**
 
-![Project Status](https://img.shields.io/badge/Status-Active-success)
-![Python](https://img.shields.io/badge/Backend-FastAPI-blue?logo=fastapi)
-![Frontend](https://img.shields.io/badge/Frontend-Next.js-black?logo=next.js)
+AURAA (Adaptive User-Responsive Assistant) is a next-generation empathetic AI interface. Using advanced computer vision and real-time neural processing, AURAA doesn't just respond to your words—she responds to your feeling.
 
-**Emotion Companion** is a cutting-edge web application that uses real-time computer vision to detect your emotions via webcam and responds with an empathetic 3D avatar. The avatar interacts with you using natural voice conversations and lip-syncing animations, powered by state-of-the-art Large Language Models (LLMs).
+![Project Status](https://img.shields.io/badge/Status-Optimized-success?style=for-the-badge)
+![React](https://img.shields.io/badge/Frontend-Next.js%2015-blue?style=for-the-badge&logo=next.js)
+![Three.js](https://img.shields.io/badge/Graphics-React%20Three%20Fiber-lightblue?style=for-the-badge&logo=three.js)
+![FastAPI](https://img.shields.io/badge/Backend-FastAPI-green?style=for-the-badge&logo=fastapi)
 
-## ✨ Features
+---
 
-- **👀 Real-time Emotion Detection**: Analyzes facial expressions instantly using DeepFace and OpenCV.
-- **🗣️ Natural Voice Interaction**: Talk to the avatar, and it talks back with lip-sync.
-- **🤖 Empathetic AI**: Powered by Groq (Llama-3) to provide supportive and context-aware responses.
-- **🎨 3D Avatar**: A fully animated 3D character rendered with Three.js / React Three Fiber.
-- **⚡ Reactive UI**: Modern, glassmorphism-inspired interface built with Next.js and TailwindCSS.
+## ✨ Core Neural Features
 
-## 🏗️ Tech Stack
+### 👤 Multi-Morph Avatar Selection
+Choose between two distinct interfaces for your interaction:
+- **Avatar 1 (Claudia)**: A high-fidelity, full-bodied humanoid rendered in a futuristic high-density blue wireframe. Features rigged skeletal animations and natural hand gestures.
+- **Avatar 2 (Classic Bot)**: A nostalgically reactive core bot. Features a round facial sphere with multi-color emotive eyes and a dynamic mechanical mouth that reflects your state of mind.
 
-### Frontend (`/myapp`)
-- **Framework**: [Next.js](https://nextjs.org/) (React 19)
-- **Styling**: [TailwindCSS](https://tailwindcss.com/)
-- **3D Graphics**: [Three.js](https://threejs.org/), [React Three Fiber](https://docs.pmnd.rs/react-three-fiber), [Drei](https://github.com/pmndrs/drei)
-- **Animations**: [Framer Motion](https://www.framer.com/motion/)
-- **Communication**: Socket.IO Client
+### 🗣️ Proactive Personalized Interaction
+- **Smart Greeting**: AURAA recognizes you upon arrival, greeting you by name with a human-like voice synthesis.
+- **Dynamic Lip-Sync**: High-frequency visual data-pulses synchronize her movements with her voice for a convincing speech simulation.
+- **Emotion-Reactive Lighting**: The digital environment and the avatar's internal glow shift dynamically (Teal for Happy, Red for Angry, Deep Blue for Sad) based on her perception of your mood.
 
-### Backend (`/backend`)
-- **Server**: [FastAPI](https://fastapi.tiangolo.com/)
-- **Vision**: DeepFace, OpenCV
-- **AI/LLM**: Groq API (Llama-3)
-- **Real-time**: Python-SocketIO
+### 🧠 Empathetic Neural Core
+- **Real-time Computer Vision**: Powered by DeepFace and OpenCV to track 7 emotional states with stabilizing neural smoothing.
+- **Llama-3 LLM Intelligence**: AURAA uses high-speed Groq inference to provide context-aware, empathetic, and supportive conversation.
 
-## 🚀 Getting Started
+---
 
-### Prerequisites
-- **Node.js** (v18+ recommended)
-- **Python** (v3.10+ recommended)
-- **Groq API Key**: You need an API key from [Groq Console](https://console.groq.com/).
+## 🏗️ The Tech Stack
 
-### 1. Clone the Repository
-```bash
-git clone https://github.com/your-username/emotion-companion.git
-cd emotion-companion
-```
+### Hyper-Modern Frontend (`/myapp`)
+- **Graphics**: [React Three Fiber](https://docs.pmnd.rs/react-three-fiber) & [Drei](https://github.com/pmndrs/drei)
+- **Framework**: [Next.js](https://nextjs.org/) (App Router)
+- **Styling**: Tailwind CSS with Glassmorphic Design Patterns
+- **State**: React Hooks & Context API
 
-### 2. Backend Setup
-Navigate to the backend directory and set up the Python environment.
+### Scalable Backend (`/backend`)
+- **Engine**: FastAPI (Python)
+- **Vision**: OpenCV + DeepFace
+- **Real-time**: Python-SocketIO for millisecond latency between cameras and shaders.
+- **Intelligence**: Groq API integration (Llama-3 70B)
 
+---
+
+## 🏃‍♂️ Neural Initialization
+
+### 1. Backend Activation
 ```bash
 cd backend
-
-# Create a virtual environment (recommended)
+# Setup venv and install requirements
 python -m venv venv
-
-# Activate the virtual environment
-# On Windows:
-.\venv\Scripts\activate
-# On macOS/Linux:
-source venv/bin/activate
-
-# Install dependencies
+# Activate & Install
 pip install -r requirements.txt
-```
-
-**Configuration:**
-Create a `.env` file in the `backend/` directory and add your API key:
-```env
-GROQ_API_KEY=your_groq_api_key_here
-```
-
-### 3. Frontend Setup
-Open a new terminal, navigate to the frontend directory (`myapp`), and install dependencies.
-
-```bash
-cd myapp
-npm install
-```
-
-## 🏃‍♂️ Running the Application
-
-You need to run both the backend and frontend servers.
-
-### Option A: Run Separately (Recommended)
-
-**Terminal 1 (Backend):**
-```bash
-cd backend
-# Ensure venv is activated
+# Launch Neural Engine
 uvicorn main:app --reload --port 8000
 ```
 
-**Terminal 2 (Frontend):**
+### 2. Frontend Manifestation
 ```bash
 cd myapp
-npm run dev
-```
-
-### Option B: Run Concurrently (Root Script)
-If you have set up your backend virtual environment specifically in `backend/venv2`, you can use the root script:
-
-```bash
-# In the root directory
 npm install
 npm run dev
 ```
-*Note: This requires the backend venv to be named `venv2` inside the `backend` folder.*
 
-## 📂 Project Structure
+---
 
+## 📂 Neural Architecture
 ```
-├── backend/                # FastAPI Backend
-│   ├── main.py             # Entry point, API & Socket.IO
-│   ├── emotion.py          # Emotion detection logic
-│   ├── emotion_smoothing.py # Stabilizes emotion capability
-│   ├── chatbot_llm.py      # Groq LLM integration
-│   └── requirements.txt    # Python dependencies
-│
-├── myapp/                  # Next.js Frontend
-│   ├── app/                # Next.js App Router pages
-│   ├── components/         # Reusable React components
-│   ├── hooks/              # Custom React hooks
-│   ├── lib/                # Shared utilities
-│   ├── public/             # Static assets (3D models, icons)
-│   │   └── models/         # Contains avatar.glb
-│   └── package.json        # Frontend dependencies
-│
-└── package.json            # Root scripts
+├── backend/                # FastAPI Empathy Engine
+│   └── main.py             # Brain Entry Point
+├── myapp/                  # Glassmorphic Workspace
+│   ├── components/         # 3D Sceneries & UI Units
+│   ├── hooks/              # useEmotionAI Neural Hook
+│   └── public/             # Neural Assets (Claudia FBX, Classic GLB)
 ```
 
-## 🤝 Contributing
+---
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+## 🤝 Protocol Contribution
+Contributions to the empathetic future are welcome. Feel free to submit an issue or a neural pull request.
 
 ## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+Licensed under the [MIT License](LICENSE).
