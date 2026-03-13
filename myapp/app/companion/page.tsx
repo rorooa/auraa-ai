@@ -184,7 +184,7 @@ export default function CompanionPage() {
                     const token = localStorage.getItem("auraa_token");
                     if (token) {
                         try {
-                            await fetch("http://localhost:8000/profile/language", {
+                            await fetch("/profile/language", {
                                 method: "POST",
                                 headers: {
                                     "Content-Type": "application/json",
