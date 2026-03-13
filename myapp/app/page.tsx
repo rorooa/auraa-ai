@@ -11,9 +11,21 @@ export default function Dashboard() {
   const [isEditingName, setIsEditingName] = useState(false);
 
   useEffect(() => {
+    const token = localStorage.getItem("auraa_token");
+    if (!token) {
+      router.push("/login");
+      return;
+    }
+    
     const savedName = localStorage.getItem("userName");
     if (savedName) setUserName(savedName);
-  }, []);
+  }, [router]);
+
+  const handleLogout = () => {
+    localStorage.removeItem("auraa_token");
+    localStorage.removeItem("userName");
+    router.push("/login");
+  };
 
   const handleSaveName = (newName: string) => {
     setUserName(newName);
@@ -117,7 +129,7 @@ export default function Dashboard() {
           {isEditingName ? (
             <input
               autoFocus
-              className="bg-white/5 border border-white/20 rounded-xl px-4 py-2 outline-none text-3xl font-bold text-right backdrop-blur-md focus:border-indigo-500 transition-all font-jura"
+              className="bg-white/5 border border-white/20 rounded-xl px-4 py-2 outline-none text-3xl font-bold text-right backdrop-blur-md focus:border-indigo-500 transition-all font-jura w-48"
               value={userName}
               onChange={(e) => setUserName(e.target.value)}
               onBlur={() => handleSaveName(userName)}
@@ -127,14 +139,17 @@ export default function Dashboard() {
             <motion.button
               whileHover={{ x: -5 }}
               onClick={() => setIsEditingName(true)}
-              className="text-4xl font-bold hover:text-indigo-400 transition-colors cursor-pointer group flex items-center gap-4 justify-end"
+              className="text-4xl font-bold hover:text-indigo-400 transition-colors cursor-pointer group flex items-center gap-4 justify-end w-48 overflow-hidden text-ellipsis whitespace-nowrap"
             >
-              <span>{userName}</span>
-              <User className="opacity-40 group-hover:opacity-100 group-hover:text-indigo-400 transition-all" size={28} />
+              <span className="truncate">{userName}</span>
+              <User className="opacity-40 group-hover:opacity-100 group-hover:text-indigo-400 transition-all shrink-0" size={28} />
             </motion.button>
           )}
+          <button onClick={handleLogout} className="text-[10px] mt-2 text-rose-400 hover:text-rose-300 uppercase tracking-widest font-bold border-b border-rose-500/30">
+            Disconnect System
+          </button>
         </div>
-        <div className="w-16 h-16 rounded-2xl overflow-hidden border border-white/20 shadow-2xl skew-x-3 transition-transform hover:skew-x-0 cursor-pointer">
+        <div className="w-16 h-16 shrink-0 rounded-2xl overflow-hidden border border-white/20 shadow-2xl skew-x-3 transition-transform hover:skew-x-0 cursor-pointer">
           <div className="w-full h-full bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-600 animate-gradient-xy flex items-center justify-center">
             <User size={32} />
           </div>

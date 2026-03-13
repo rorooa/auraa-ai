@@ -9,15 +9,27 @@ import socketio
 from dotenv import load_dotenv
 load_dotenv()
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import OAuth2PasswordBearer
+from sqlalchemy.orm import Session
 from chatbot_llm import generate_llm_reply
 from emotion import detect_emotion_from_image
 from emotion_smoothing import smooth_emotion
 from pydantic import BaseModel
 
+from database import engine, Base, ChatHistory, User
+import auth
+from auth import get_current_user, get_db
+from encryption import encrypt_text, decrypt_text
+
+Base.metadata.create_all(bind=engine)
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
+
 # ---------------- FASTAPI ----------------
 fastapi_app = FastAPI()
+
+fastapi_app.include_router(auth.router)
 
 # REST CORS (for /chat, /emotion)
 fastapi_app.add_middleware(
@@ -62,10 +74,69 @@ class ChatRequest(BaseModel):
     context: str | None = None
 
 @fastapi_app.post("/chat")
-def chat(payload: ChatRequest):
+def chat(payload: ChatRequest, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    user = get_current_user(token, db)
+    
+    # Extract latest user message
+    user_msg_content = ""
+    if payload.messages and len(payload.messages) > 0:
+        user_msg_content = payload.messages[-1].content
+    
     # Returns Dict: { "reply": "...", "recommendation": { ... } }
-    response_data = generate_llm_reply(payload.name, payload.emotion, payload.messages, payload.context)
+    response_data = generate_llm_reply(
+        name=payload.name, 
+        emotion=payload.emotion, 
+        messages=payload.messages, 
+        context=payload.context,
+        language=user.language_preference
+    )
+    
+    try:
+        # Encrypt and save user message
+        if user_msg_content:
+            enc_user_msg = encrypt_text(user_msg_content)
+            db_user_msg = ChatHistory(user_id=user.id, role="user", encrypted_content=enc_user_msg, detected_emotion=payload.emotion)
+            db.add(db_user_msg)
+            
+        # Encrypt and save assistant message
+        ai_reply = response_data.get("reply", "")
+        if ai_reply:
+            enc_ai_msg = encrypt_text(ai_reply)
+            db_ai_msg = ChatHistory(user_id=user.id, role="system", encrypted_content=enc_ai_msg, detected_emotion=payload.emotion)
+            db.add(db_ai_msg)
+            
+        db.commit()
+    except Exception as e:
+        print("[ERROR] storing chat history:", e)
+        db.rollback()
+
     return response_data
+
+class LanguageUpdate(BaseModel):
+    language: str
+
+@fastapi_app.post("/profile/language")
+def update_language(payload: LanguageUpdate, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    user = get_current_user(token, db)
+    user.language_preference = payload.language
+    db.commit()
+    return {"status": "success", "language": user.language_preference}
+
+@fastapi_app.get("/history")
+def get_history(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    user = get_current_user(token, db)
+    histories = db.query(ChatHistory).filter(ChatHistory.user_id == user.id).order_by(ChatHistory.created_at.desc()).limit(50).all()
+    
+    decrypted_history = []
+    # Reverse so oldest is first again
+    for h in reversed(histories):
+        decrypted_history.append({
+            "role": h.role,
+            "content": decrypt_text(h.encrypted_content),
+            "emotion": h.detected_emotion,
+            "timestamp": h.created_at.isoformat()
+        })
+    return {"history": decrypted_history}
 
 # ---------------- SOCKET EVENTS ----------------
 import asyncio
@@ -101,4 +172,4 @@ async def emotion(sid, data):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8000)

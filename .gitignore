@@ -49,3 +49,11 @@ out/
 # OS
 .DS_Store
 Thumbs.db
+
+# Database (SQLite - must not be committed)
+*.db
+*.sqlite3
+
+# Temp test files
+backend/fertest.txt
+backend/test_output.txt

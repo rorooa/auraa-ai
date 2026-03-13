@@ -1,7 +1,7 @@
 "use client";
 
 import { useTheme } from "next-themes";
-import { Mic, Moon, Sun, Zap, User } from "lucide-react";
+import { Mic, Moon, Sun, Zap, User, Volume2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import AudioVisualizer from "./AudioVisualizer";
 
@@ -13,9 +13,12 @@ interface ControlPanelProps {
     isSpeaking: boolean;
     onManualEmotion?: (emotion: string) => void;
     onOpenProfile: () => void;
+    availableVoices: SpeechSynthesisVoice[];
+    selectedVoice: SpeechSynthesisVoice | null;
+    onVoiceChange: (voice: SpeechSynthesisVoice) => void;
 }
 
-export default function ControlPanel({ status, emotion, onStart, isConnected, isSpeaking, onManualEmotion, onOpenProfile }: ControlPanelProps) {
+export default function ControlPanel({ status, emotion, onStart, isConnected, isSpeaking, onManualEmotion, onOpenProfile, availableVoices, selectedVoice, onVoiceChange }: ControlPanelProps) {
     const { theme, setTheme } = useTheme();
 
     return (
@@ -84,6 +87,46 @@ export default function ControlPanel({ status, emotion, onStart, isConnected, is
 
             {/* Footer / Controls */}
             <div className="space-y-4">
+
+                {/* Voice Selector */}
+                {availableVoices.length > 0 && (
+                    <div className="space-y-2">
+                        <p className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-bold flex items-center gap-2">
+                            <Volume2 size={12} /> Agent Voice
+                        </p>
+                        <div className="relative">
+                            <select
+                                value={selectedVoice?.name ?? ""}
+                                onChange={(e) => {
+                                    const v = availableVoices.find(v => v.name === e.target.value);
+                                    if (v) onVoiceChange(v);
+                                }}
+                                className="w-full bg-white/5 border border-white/10 hover:border-indigo-500/50 focus:border-indigo-500/50 rounded-xl px-3 py-2.5 outline-none transition-all text-slate-200 text-[11px] font-medium appearance-none cursor-pointer pr-8"
+                            >
+                                {availableVoices.map((v) => (
+                                    <option key={v.name} value={v.name} className="bg-slate-900 text-slate-200">
+                                        {v.name} ({v.lang})
+                                    </option>
+                                ))}
+                            </select>
+                            <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
+                                ▾
+                            </div>
+                        </div>
+                        <button
+                            onClick={() => {
+                                window.speechSynthesis.cancel();
+                                const t = new SpeechSynthesisUtterance("Hello! I am AURAA, your AI companion.");
+                                if (selectedVoice) t.voice = selectedVoice;
+                                window.speechSynthesis.speak(t);
+                            }}
+                            className="w-full py-1.5 rounded-xl border border-white/10 hover:bg-indigo-500/10 hover:border-indigo-500/30 transition-all flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-indigo-300"
+                        >
+                            <Volume2 size={12} /> Preview Voice
+                        </button>
+                    </div>
+                )}
+
                 <button
                     onClick={onOpenProfile}
                     className="w-full py-3 rounded-xl border border-white/10 hover:bg-white/5 transition-all flex items-center justify-center gap-2 text-sm font-medium"

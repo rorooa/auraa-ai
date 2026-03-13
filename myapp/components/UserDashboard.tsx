@@ -7,6 +7,7 @@ interface UserInfo {
     name: string;
     interests: string;
     context: string;
+    language: string;
 }
 
 interface UserDashboardProps {
@@ -73,6 +74,23 @@ export default function UserDashboard({ isOpen, onClose, currentInfo, onSave }: 
                             className="w-full bg-white/5 border border-white/10 focus:border-indigo-500/50 rounded-xl px-4 py-3.5 outline-none transition-all text-slate-100 placeholder-slate-600 font-medium"
                             placeholder="How is your day going?"
                         />
+                    </div>
+
+                    <div>
+                        <label className="block text-[10px] uppercase tracking-widest font-bold mb-2 text-slate-400">Preferred Language</label>
+                        <select
+                            value={formData.language}
+                            onChange={e => setFormData({ ...formData, language: e.target.value })}
+                            className="w-full bg-white/5 border border-white/10 focus:border-indigo-500/50 rounded-xl px-4 py-3.5 outline-none transition-all text-slate-100 font-medium appearance-none"
+                        >
+                            <option value="English" className="bg-slate-900">English</option>
+                            <option value="Spanish" className="bg-slate-900">Español</option>
+                            <option value="French" className="bg-slate-900">Français</option>
+                            <option value="German" className="bg-slate-900">Deutsch</option>
+                            <option value="Japanese" className="bg-slate-900">日本語</option>
+                            <option value="Hindi" className="bg-slate-900">हिंदी</option>
+                            <option value="Korean" className="bg-slate-900">한국어</option>
+                        </select>
                     </div>
 
                     <button

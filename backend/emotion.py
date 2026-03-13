@@ -1,47 +1,62 @@
 import base64
 import cv2
 import numpy as np
-import random
 import os
 
-# ---------------- FIX FOR TENSORFLOW 2.16+ / PYTHON 3.12 ----------------
-# DeepFace requires legacy Keras behavior to avoid "__version__" errors
+os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
 os.environ["TF_USE_LEGACY_KERAS"] = "1"
 
+# ---------------- EMOTION LABELS (FER standard) ----------------
+EMOTION_LABELS = {
+    0: "angry",
+    1: "disgust",
+    2: "fear",
+    3: "happy",
+    4: "sad",
+    5: "surprise",
+    6: "neutral",
+}
+
 # ---------------- LAZY LOAD FLAGS ----------------
-DEEPFACE_AVAILABLE = False
-FER_AVAILABLE = False
-MODELS_LOADED = False
-fer_detector = None
-DeepFace = None
+TFLITE_LOADED = False
+tflite_interpreter = None
+tflite_input_details = None
+tflite_output_details = None
+face_cascade = None
 
 def load_models():
-    global fer_detector, DEEPFACE_AVAILABLE, FER_AVAILABLE, MODELS_LOADED, DeepFace
-    if MODELS_LOADED:
+    global TFLITE_LOADED, tflite_interpreter, tflite_input_details, tflite_output_details, face_cascade
+
+    if TFLITE_LOADED:
         return
 
-    print("[INFO] Loading Emotion Models...")
+    print("[INFO] Loading Emotion Models (Direct TFLite + OpenCV)...")
 
-    # 1. Try FER (Facial Expression Recognition)
-    try:
-        from fer import FER
-        # mtcnn=False is faster (OpenCV Haarcascade)
-        fer_detector = FER(mtcnn=False) 
-        FER_AVAILABLE = True
-        print("[INFO] FER Library Loaded Successfully")
-    except Exception as e:
-        print(f"[WARNING] FER Library Import Error: {e}")
+    # Load OpenCV face detector
+    face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
+    print("[INFO] OpenCV Face Cascade Loaded")
 
-    # 2. Try DeepFace
+    # Find the tflite model — bundled inside the fer package
     try:
-        from deepface import DeepFace as DF
-        DeepFace = DF
-        DEEPFACE_AVAILABLE = True
-        print("[INFO] DeepFace Library Loaded Successfully")
+        import importlib.util
+        fer_spec = importlib.util.find_spec("fer")
+        if fer_spec and fer_spec.origin:
+            fer_dir = os.path.dirname(fer_spec.origin)
+            tflite_path = os.path.join(fer_dir, "data", "emotion_model_quantized.tflite")
+            if not os.path.exists(tflite_path):
+                raise FileNotFoundError(f"TFLite model not at: {tflite_path}")
+        else:
+            raise ImportError("fer package not found")
+
+        import tensorflow as tf
+        tflite_interpreter = tf.lite.Interpreter(model_path=tflite_path)
+        tflite_interpreter.allocate_tensors()
+        tflite_input_details = tflite_interpreter.get_input_details()
+        tflite_output_details = tflite_interpreter.get_output_details()
+        TFLITE_LOADED = True
+        print(f"[INFO] TFLite Emotion Model Loaded: {tflite_path}")
     except Exception as e:
-        print(f"[WARNING] DeepFace Library Import Error: {e}")
-    
-    MODELS_LOADED = True
+        print(f"[ERROR] Could not load TFLite model: {e}")
 
 # ---------------- NORMALIZE EMOTIONS ----------------
 def normalize_emotion(emotion: str) -> str:
@@ -52,92 +67,92 @@ def normalize_emotion(emotion: str) -> str:
         "fear": "fear",
         "surprise": "surprise",
         "disgust": "disgust",
-        "neutral": "neutral"
+        "neutral": "neutral",
     }
     return mapping.get(emotion.lower(), "neutral")
 
 # ---------------- CONFIDENCE FILTER ----------------
-def confidence_filter(emotion: str, confidence: float, threshold: float = 0.30) -> str:
+def confidence_filter(emotion: str, confidence: float, threshold: float = 0.20) -> str:
     if confidence < threshold:
         return "neutral"
     return emotion
 
+# ---------------- RUN TFLITE INFERENCE ----------------
+def predict_emotion_tflite(gray_face_64x64: np.ndarray) -> dict:
+    """Run TFLite inference on a preprocessed 64x64 grayscale face patch."""
+    # Normalize: values expected in [-1, 1]
+    face = gray_face_64x64.astype(np.float32) / 255.0
+    face = (face - 0.5) * 2.0
+    # Shape: (1, 64, 64, 1)
+    face = np.expand_dims(face, axis=0)
+    face = np.expand_dims(face, axis=-1)
+
+    tflite_interpreter.set_tensor(tflite_input_details[0]["index"], face)
+    tflite_interpreter.invoke()
+    output = tflite_interpreter.get_tensor(tflite_output_details[0]["index"])[0]
+
+    return {EMOTION_LABELS[i]: float(output[i]) for i in range(len(output))}
+
 # ---------------- MAIN FUNCTION ----------------
 def detect_emotion_from_image(image_base64: str) -> str:
-    # LAZY LOAD MODELS ON FIRST REQUEST ONLY
     load_models()
-    
+
     try:
         # Decode base64
         if "," in image_base64:
             image_base64 = image_base64.split(",")[1]
-            
+
         image_bytes = base64.b64decode(image_base64)
         np_arr = np.frombuffer(image_bytes, np.uint8)
         frame = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
 
         if frame is None:
+            print("[WARNING] Could not decode image frame")
             return "neutral"
 
-        # ---------------- OPTION A: FER Library (Recommended Stability) ----------------
-        if FER_AVAILABLE:
-            # Returns list of dicts: [{'box': (x, y, w, h), 'emotions': {'angry': 0.0, ...}}]
-            result = fer_detector.detect_emotions(frame)
-            
-            if result and len(result) > 0:
-                # Get first face
-                emotions = result[0]["emotions"]
-                # Find max value
-                dominant_emotion = max(emotions, key=emotions.get)
-                confidence = emotions[dominant_emotion]
-                
-                return confidence_filter(normalize_emotion(dominant_emotion), confidence)
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-        # ---------------- OPTION B: DeepFace (If FER unavailable) ----------------
-        if DEEPFACE_AVAILABLE:
-            frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            result = DeepFace.analyze(
-                img_path=frame_rgb,
-                actions=["emotion"],
-                enforce_detection=False,
-                align=False,
-                detector_backend="opencv"
-            )
-            
-            if isinstance(result, list):
-                result = result[0]
+        if not TFLITE_LOADED or face_cascade is None:
+            print("[WARNING] Models not loaded, returning neutral")
+            return "neutral"
 
-            emotions = result["emotion"]
-            dominant = result["dominant_emotion"]
-            confidence = emotions.get(dominant, 0) / 100.0
+        # Detect faces
+        faces = face_cascade.detectMultiScale(
+            gray,
+            scaleFactor=1.1,
+            minNeighbors=5,
+            minSize=(30, 30),
+            flags=cv2.CASCADE_SCALE_IMAGE
+        )
 
-            return confidence_filter(normalize_emotion(dominant), confidence)
-            
-        # ---------------- OPTION C: Pure OpenCV Fallback (No TF required) ----------------
-        # If both ML libraries failed, we can at least detect smiles!
-        if not FER_AVAILABLE and not DEEPFACE_AVAILABLE:
-            try:
-                gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-                # Load Haar classifiers
-                face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
-                smile_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_smile.xml')
-                
-                faces = face_cascade.detectMultiScale(gray, 1.3, 5)
-                
-                for (x, y, w, h) in faces:
-                    roi_gray = gray[y:y+h, x:x+w]
-                    smiles = smile_cascade.detectMultiScale(roi_gray, 1.8, 20)
-                    
-                    if len(smiles) > 0:
-                        return "happy"
-                        
-                return "neutral"
-            except Exception:
-                return "neutral"
-            
-        # ---------------- FALLBACK ----------------
-        return "neutral"
+        if len(faces) == 0:
+            print("[DEBUG] No face detected in frame")
+            return "neutral"
+
+        # Use the largest face
+        x, y, w, h = sorted(faces, key=lambda f: f[2] * f[3], reverse=True)[0]
+
+        # Add padding (clamped to image bounds)
+        pad = 10
+        x1 = max(0, x - pad)
+        y1 = max(0, y - pad)
+        x2 = min(gray.shape[1], x + w + pad)
+        y2 = min(gray.shape[0], y + h + pad)
+
+        face_roi = gray[y1:y2, x1:x2]
+        face_64 = cv2.resize(face_roi, (64, 64))
+
+        emotions = predict_emotion_tflite(face_64)
+        dominant = max(emotions, key=emotions.get)
+        confidence = emotions[dominant]
+
+        print(f"[DEBUG] Emotions: {emotions}")
+        print(f"[DEBUG] Dominant: {dominant} ({confidence:.2f})")
+
+        return confidence_filter(normalize_emotion(dominant), confidence)
 
     except Exception as e:
         print(f"[ERROR] Emotion Detection Error: {e}")
+        import traceback
+        traceback.print_exc()
         return "neutral"

@@ -4,29 +4,39 @@ from groq import Groq
 
 client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
-def generate_llm_reply(name, emotion, messages, context=None):
+def generate_llm_reply(name, emotion, messages, context=None, language="English"):
     PLAYLISTS = {
         "sad": "https://open.spotify.com/playlist/37i9dQZF1DX3rxVfibe1L0?si=xaY-KLI3TjKwi1Tu4lp2VQ",
         "angry": "https://open.spotify.com/playlist/37i9dQZF1DWU0ScTcjJBdj?si=bnBXTa-WTpWTwN1SDgowBA",
         "happy": "https://open.spotify.com/playlist/37i9dQZF1DXdPec7aLTmlC?si=PVuKGCQISdmSOTK4wYemFA",
-        "default": "https://open.spotify.com/playlist/37i9dQZF1DXdPec7aLTmlC?si=PVuKGCQISdmSOTK4wYemFA",
-        "calm": "https://open.spotify.com/playlist/37i9dQZF1DXdPec7aLTmlC?si=PVuKGCQISdmSOTK4wYemFA"
+        "default": "https://open.spotify.com/playlist/37i9dQZF1DXdPec7aLTmlC?si=PVuKGCQISdmSOTK4wYemFA"
     }
+    
+    # Generic search queries for streaming platforms
+    MOVIES = {
+        "sad": "uplifting comedy or feel-good movie",
+        "angry": "calm documentaries or action thrillers to vent",
+        "happy": "upbeat adventure or fantasy",
+        "default": "popular trending movie"
+    }
+
+    music = PLAYLISTS.get(emotion.lower(), PLAYLISTS['default'])
+    movie = MOVIES.get(emotion.lower(), MOVIES['default'])
 
     system_prompt = (
         "You are an emotionally intelligent AI companion. "
         f"User Name: {name}. Current Emotion: {emotion}. "
+        f"Preferred Language: {language}. "
+        "CRITICAL: ALL SPOKEN REPLIES MUST BE IN THE PREFERRED LANGUAGE. "
         f"{context if context else ''}"
         "Respond naturally and empathetically to the conversation history. "
-        "Logic for recommendations:"
-        "1. If the user is SAD, ANGRY, or HAPPY, ask gently: 'Would you like some music?'"
-        "2. If they say YES (or imply agreement), return the specific playlist link in 'recommendation.query' and set 'recommendation.type' to 'song'."
-        "   - SAD -> " + PLAYLISTS['sad'] + ""
-        "   - ANGRY -> " + PLAYLISTS['angry'] + ""
-        "   - HAPPY -> " + PLAYLISTS['happy'] + ""
-        "   - ALL OTHERS -> " + PLAYLISTS['default'] + ""
-        "Return ONLY valid JSON with this structure: "
-        "{ \"reply\": \"spoken response\", \"recommendation\": { \"type\": \"song\"|\"video\"|\"game\"|\"none\", \"query\": \"URL_OR_SEARCH_TERM\" } }"
+        "Logic for recommendations:\n"
+        "1. If the user is SAD, ANGRY, or HAPPY (triggered), recommend BOTH a song and a movie.\n"
+        "2. To do this, return the exact JSON structure below, filling 'reply' with your message.\n"
+        f"   - For music URL, use: {music}\n"
+        f"   - For movie_query, use: {movie}\n"
+        "Return ONLY valid JSON with this exact structure: \n"
+        "{ \"reply\": \"spoken response in preferred language\", \"recommendation\": { \"type\": \"bundle\", \"music_url\": \"...\", \"movie_query\": \"...\" } }\n"
         "keep the reply short (under 2 sentences) and conversational."
     )
 

@@ -5,8 +5,11 @@ import ControlPanel from "@/components/ControlPanel";
 import ChatInterface from "@/components/ChatInterface";
 import AvatarScene from "@/components/AvatarScene";
 import MediaOverlay from "@/components/MediaOverlay";
+import dynamic from "next/dynamic";
 import { useEmotionAI } from "@/hooks/useEmotionAI";
 import UserDashboard from "@/components/UserDashboard";
+
+const FaceScanner = dynamic(() => import("@/components/FaceScanner"), { ssr: false });
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 
@@ -24,11 +27,15 @@ export default function CompanionPage() {
         canvasRef,
         proactiveEmotion,
         clearProactiveTrigger,
-        setEmotion
+        setEmotion,
+        emotionCount,
+        availableVoices,
+        selectedVoice,
+        setSelectedVoice,
     } = useEmotionAI();
 
     const [recommendation, setRecommendation] = useState<any>(null);
-    const [userInfo, setUserInfo] = useState({ name: "User", interests: "", context: "" });
+    const [userInfo, setUserInfo] = useState({ name: "User", interests: "", context: "", language: "English" });
     const [isProfileOpen, setIsProfileOpen] = useState(false);
 
     // Avatar Selection State
@@ -143,16 +150,25 @@ export default function CompanionPage() {
             </div>
 
             {/* Hidden Elements for Processing */}
-            <div className="absolute opacity-0 pointer-events-none">
+            <div className="absolute opacity-0 pointer-events-none w-0 h-0 overflow-hidden">
                 <video ref={videoRef} autoPlay playsInline muted />
                 <canvas ref={canvasRef} />
             </div>
+
+            {/* Face Scanner Picture-in-Picture (Only in Classic Bot) */}
+            {selectedAvatar === "avatar2" && (
+                <div className="absolute top-[20%] left-[30%] z-50 translate-x-[-50%]">
+                    <FaceScanner videoRef={videoRef} isConnected={isConnected} />
+                </div>
+            )}
 
             {/* Media Overlay */}
             {recommendation && (
                 <MediaOverlay
                     type={recommendation.type}
                     query={recommendation.query}
+                    music_url={recommendation.music_url}
+                    movie_query={recommendation.movie_query}
                     onClose={() => setRecommendation(null)}
                 />
             )}
@@ -161,9 +177,25 @@ export default function CompanionPage() {
                 isOpen={isProfileOpen}
                 onClose={() => setIsProfileOpen(false)}
                 currentInfo={userInfo}
-                onSave={(info) => {
+                onSave={async (info) => {
                     setUserInfo(info);
                     localStorage.setItem("userName", info.name);
+                    
+                    const token = localStorage.getItem("auraa_token");
+                    if (token) {
+                        try {
+                            await fetch("http://localhost:8000/profile/language", {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                    "Authorization": `Bearer ${token}`
+                                },
+                                body: JSON.stringify({ language: info.language })
+                            });
+                        } catch (err) {
+                            console.error("Failed to sync language:", err);
+                        }
+                    }
                 }}
             />
 
@@ -177,6 +209,9 @@ export default function CompanionPage() {
                     isSpeaking={isSpeaking}
                     onManualEmotion={setEmotion}
                     onOpenProfile={() => setIsProfileOpen(true)}
+                    availableVoices={availableVoices}
+                    selectedVoice={selectedVoice}
+                    onVoiceChange={setSelectedVoice}
                 />
             </div>
 
