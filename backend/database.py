@@ -7,6 +7,13 @@ import json
 # Check for environment variable first (for Render/Production)
 firebase_config_env = os.getenv("FIREBASE_SERVICE_ACCOUNT")
 
+# Debugging connection
+if not firebase_config_env:
+    print("DEBUG: FIREBASE_SERVICE_ACCOUNT not found in environment.")
+    print(f"DEBUG: Visible env keys starting with FIREBASE: {[k for k in os.environ.keys() if k.startswith('FIREBASE')]}")
+else:
+    print("DEBUG: FIREBASE_SERVICE_ACCOUNT found in environment!")
+
 if firebase_config_env:
     try:
         # Parse the JSON string from environment variable
