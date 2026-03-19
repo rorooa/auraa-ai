@@ -178,7 +178,6 @@ export default function LoginPage() {
                 animate={{ 
                     opacity: 1, 
                     scale: 1, 
-                    y: 0,
                     x: mousePosition.x * 0.3,
                     y: mousePosition.y * 0.3,
                     rotateX: -mousePosition.y * 0.05,
