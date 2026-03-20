@@ -12,8 +12,20 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = (getApps().length === 0 && process.env.NEXT_PUBLIC_FIREBASE_API_KEY) 
-  ? initializeApp(firebaseConfig) 
-  : getApps()[0];
+let app;
+const apiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
+
+if (typeof window !== "undefined") {
+  if (getApps().length === 0) {
+    if (apiKey) {
+      app = initializeApp(firebaseConfig);
+      console.log("Firebase initialized successfully.");
+    } else {
+      console.warn("Firebase API Key is missing. Check your environment variables (NEXT_PUBLIC_FIREBASE_API_KEY).");
+    }
+  } else {
+    app = getApps()[0];
+  }
+}
 
 export const auth = app ? getAuth(app) : null;
