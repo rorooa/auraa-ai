@@ -59,9 +59,9 @@ export default function EmotionTracker({ isOpen, onClose, data }: EmotionTracker
     const usableHeight = svgHeight - padding * 2;
 
     const points = chartData.map((d, i) => {
-        const x = padding + (chartData.length > 1 ? (i / (chartData.length - 1)) * usableWidth : usableWidth / 2);
-        const y = padding + usableHeight - ((d.y - 1) / 8) * usableHeight;
-        return { x, y, ...d };
+        const px = padding + (chartData.length > 1 ? (i / (chartData.length - 1)) * usableWidth : usableWidth / 2);
+        const py = padding + usableHeight - ((d.y - 1) / 8) * usableHeight;
+        return { x: px, y: py, emotion: d.emotion };
     });
 
     // Build smooth path
