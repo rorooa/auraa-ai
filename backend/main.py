@@ -159,9 +159,8 @@ def get_history(token: str = Depends(oauth2_scheme), db=Depends(get_db)):
             "timestamp": item["created_at"].isoformat() if hasattr(item["created_at"], "isoformat") else str(item["created_at"])
         })
     
-    # Reverse so oldest is first again (to match previous logic)
-    decrypted_history = list(reversed(temp_list))
-    return {"history": decrypted_history}
+    # Reverse the formatted list so oldest is first again
+    return {"history": list(reversed(decrypted_history))}
 
 # ---------------- SOCKET EVENTS ----------------
 import asyncio
@@ -186,7 +185,7 @@ async def emotion(sid, data):
         emotion_result = await loop.run_in_executor(None, detect_emotion_from_image, data["image"])
         smoothed_emotion = smooth_emotion(emotion_result)
         
-        print(f"[DEBUG] Emotion detected: {smoothed_emotion} (Raw: {emotion_result})")
+        # print(f"[DEBUG] Emotion detected: {smoothed_emotion} (Raw: {emotion_result})")
         await sio.emit("emotion", {"emotion": smoothed_emotion}, to=sid)
     except Exception as e:
         print(f"[ERROR] processing emotion: {e}")

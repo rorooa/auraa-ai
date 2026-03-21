@@ -90,7 +90,6 @@ export function useEmotionAI() {
                 
                 const imageData = canvas.toDataURL("image/jpeg", 0.7);
                 if (imageData.length > 100) {
-                    console.log("[useEmotionAI] Emitting frame to socket...");
                     socket.emit("emotion", { image: imageData });
                 }
             };
