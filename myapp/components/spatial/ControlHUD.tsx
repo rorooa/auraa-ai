@@ -114,38 +114,7 @@ export default function ControlHUD({
                             </select>
                         )}
                     </div>
-                    <div className="h-20 bg-white/5 border border-white/10 rounded-3xl flex items-center justify-center p-4 relative overflow-hidden shadow-inner mb-2">
-                        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-white/5 opacity-50" />
-                        {isSpeaking ? (
-                            <div className="flex gap-2 items-center justify-center h-full w-full relative z-10">
-                                {[...Array(12)].map((_, i) => (
-                                    <motion.div
-                                        key={i}
-                                        className="w-1.5 bg-white/90 rounded-full shadow-[0_0_15px_white]"
-                                        animate={{ height: ["15%", "85%", "15%"] }}
-                                        transition={{ duration: 0.4 + Math.random() * 0.4, repeat: Infinity, delay: i * 0.05 }}
-                                    />
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="text-[9px] uppercase tracking-[0.4em] text-white/20 text-center animate-pulse relative z-10">
-                                Output Ready
-                            </div>
-                        )}
-                    </div>
-                    
                     <div className="flex gap-2.5 font-jura mt-4">
-                        <button
-                            onClick={() => {
-                                window.speechSynthesis.cancel();
-                                const t = new SpeechSynthesisUtterance("Hello! I am AURAA, your AI companion.");
-                                if (selectedVoice) t.voice = selectedVoice;
-                                window.speechSynthesis.speak(t);
-                            }}
-                            className="flex-1 py-3 sm:py-2.5 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 transition-all flex items-center justify-center gap-2 text-[11px] sm:text-[10px] font-bold uppercase tracking-widest text-white/60 hover:text-white"
-                        >
-                            <Volume2 size={12} /> Test
-                        </button>
                         <button
                             onClick={onOpenProfile}
                             className="flex-1 py-3 sm:py-2.5 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 transition-all flex items-center justify-center gap-2 text-[11px] sm:text-[10px] font-bold uppercase tracking-widest text-white/60 hover:text-white"
@@ -176,23 +145,12 @@ export default function ControlHUD({
             </div>
 
             <div className="mt-auto pt-6 border-t border-white/10 w-full space-y-4 shrink-0">
-                {!isConnected ? (
-                    onStart && (
-                        <button 
-                            onClick={onStart}
-                            className="w-full py-4 rounded-3xl bg-gradient-to-r from-indigo-500 to-cyan-500 hover:from-indigo-400 hover:to-cyan-400 text-white font-bold text-xs uppercase tracking-[0.2em] shadow-[0_0_20px_rgba(99,102,241,0.4)] transition-all"
-                        >
-                            Initialize System
-                        </button>
-                    )
-                ) : (
-                    <div className="w-full py-4 rounded-3xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-center font-bold text-xs uppercase tracking-[0.2em] shadow-[0_0_20px_rgba(52,211,153,0.1)] transition-all">
-                        System Online
-                    </div>
-                )}
+                <div className={`w-full py-4 rounded-3xl border text-center font-bold text-xs uppercase tracking-[0.2em] transition-all ${isConnected ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 shadow-[0_0_20px_rgba(52,211,153,0.1)]' : 'bg-white/5 border-white/10 text-white/40'}`}>
+                    {isConnected ? "System Online" : "System Standby"}
+                </div>
                 
-                <div className="flex items-center gap-3 text-[9px] uppercase tracking-[0.4em] text-white/30 ml-1">
-                    <ShieldAlert size={14} className="text-emerald-500/70" />
+                <div className="flex items-center justify-center gap-3 text-[9px] uppercase tracking-[0.4em] text-white/30 ml-1">
+                    <ShieldAlert size={14} className={isConnected ? "text-emerald-500/70" : "text-amber-500/70"} />
                     <span>Secure Connect</span>
                 </div>
             </div>

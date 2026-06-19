@@ -192,7 +192,7 @@ export default function HeroSection() {
 
                 <motion.div 
                     initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.5, duration: 1 }}
-                    className="absolute bottom-10 left-1/2 -translate-x-1/2 text-[10px] tracking-[0.4em] uppercase text-white/30"
+                    className="relative mt-8 sm:mt-12 text-[10px] tracking-[0.4em] uppercase text-white/30 w-full text-center"
                 >
                     Click to Begin Synaptic Transfer
                 </motion.div>

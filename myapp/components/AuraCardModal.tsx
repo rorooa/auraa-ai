@@ -1,3 +1,4 @@
+/* eslint-disable */
 "use client";
 
 import { useRef, useState } from "react";
@@ -52,6 +53,39 @@ export default function AuraCardModal({ isOpen, onClose, dominantEmotion, userNa
             link.click();
         } catch (err) {
             console.error("Failed to generate Aura Card", err);
+        } finally {
+            setIsDownloading(false);
+        }
+    };
+
+    const handleShare = async () => {
+        if (!cardRef.current) return;
+        setIsDownloading(true);
+        try {
+            trackEvent("Aura Card Shared", { emotion: lowerEmotion });
+            
+            const dataUrl = await htmlToImage.toPng(cardRef.current, { quality: 1, pixelRatio: 3 });
+            
+            // Convert dataUrl to Blob for Web Share API
+            const response = await fetch(dataUrl);
+            const blob = await response.blob();
+            const file = new File([blob], `Auraa_Mood_${lowerEmotion}.png`, { type: 'image/png' });
+
+            if ('share' in navigator && (navigator as any).canShare && (navigator as any).canShare({ files: [file] })) {
+                await navigator.share({
+                    title: 'My AURAA State',
+                    text: `My current dominant emotion is ${dominantEmotion.toUpperCase()} on AURAA.`,
+                    files: [file],
+                });
+            } else {
+                // Fallback to standard download if Web Share API isn't supported
+                const link = document.createElement('a');
+                link.download = `Auraa_Mood_${lowerEmotion}.png`;
+                link.href = dataUrl;
+                link.click();
+            }
+        } catch (err) {
+            console.error("Failed to share Aura Card", err);
         } finally {
             setIsDownloading(false);
         }
@@ -127,14 +161,22 @@ export default function AuraCardModal({ isOpen, onClose, dominantEmotion, userNa
                     </div>
 
                     {/* Actions (Outside the export area) */}
-                    <div className="mt-8 flex gap-4 pointer-events-auto">
+                    <div className="mt-8 flex flex-col sm:flex-row gap-4 pointer-events-auto w-full max-w-[340px] sm:max-w-none justify-center">
                         <button 
                             onClick={handleDownload}
                             disabled={isDownloading}
-                            className="flex items-center gap-2 px-6 py-3 bg-white text-black font-bold uppercase tracking-widest text-sm rounded-full hover:scale-105 transition-transform disabled:opacity-50 disabled:hover:scale-100"
+                            className="flex items-center justify-center gap-2 px-6 py-3 bg-white/10 border border-white/20 text-white font-bold uppercase tracking-widest text-xs rounded-full hover:bg-white/20 transition-all disabled:opacity-50"
                         >
                             <Download size={16} />
-                            {isDownloading ? "Synthesizing..." : "Save Aura Card"}
+                            Save
+                        </button>
+                        <button 
+                            onClick={handleShare}
+                            disabled={isDownloading}
+                            className="flex items-center justify-center gap-2 px-6 py-3 bg-indigo-500 text-white font-bold uppercase tracking-widest text-xs rounded-full hover:bg-indigo-400 hover:scale-105 transition-all disabled:opacity-50 shadow-[0_0_20px_rgba(99,102,241,0.5)]"
+                        >
+                            <Share2 size={16} />
+                            {isDownloading ? "Synthesizing..." : "Share to Story"}
                         </button>
                     </div>
                 </div>

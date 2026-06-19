@@ -13,79 +13,79 @@ type GuideData = {
 
 const guideConfig: Record<string, GuideData> = {
   "/": {
-    title: "AURAA Core Matrix",
-    description: "Welcome to the AURAA Central Dashboard. This is your command center for accessing AI features.",
+    title: "Home Menu",
+    description: "Welcome to AURAA! This is the main menu where you can choose what to do.",
     steps: [
-      "Select a module from the holographic orbs in the hero section.",
-      "View your authentication status in the top right corner.",
-      "Explore the different diagnostic and interactive AI modes from this central hub."
+      "Click one of the colorful buttons in the middle to start an activity.",
+      "You can see if you are logged in at the top right corner.",
+      "Just explore! Each button takes you to a different AI experience."
     ]
   },
   "/login": {
-    title: "System Access",
-    description: "Authenticate to access the AURAA advanced emotion intelligence network.",
+    title: "Log In",
+    description: "Sign in to your account so AURAA can remember your preferences.",
     steps: [
-      "Enter your credentials securely.",
-      "For a demonstration, you can also use social logins or test credentials.",
-      "Once verified, you will be redirected to the Core Matrix."
+      "Type in your email and password to log in.",
+      "If you don't want to make an account, you can use the test login or sign in with Google.",
+      "After logging in, you will be taken to the Home Menu."
     ]
   },
   "/companion": {
-    title: "Neural Pulse Companion",
-    description: "Engage with your proactive Emotion AI companion.",
+    title: "Chat with AURAA",
+    description: "This is where you can have a real conversation with your AI companion.",
     steps: [
-      "Activate the Face Scanner so the AI can read your baseline emotions.",
-      "Click 'Trigger Neural Pulse' to manually simulate a proactive check-in.",
-      "Interact with the generated recommendations based on your current emotional state."
+      "Make sure your camera is on so AURAA can see how you are feeling.",
+      "Type a message in the box at the bottom, or click the Microphone icon to speak.",
+      "Click the star icon (⭐) to rate your chat, or the movie icon (🎬) to save a video clip."
     ]
   },
   "/emotion-mirror": {
-    title: "Emotion Mirror Mode",
-    description: "Compare your spoken words against your actual emotional state.",
+    title: "Emotion Mirror",
+    description: "A fun game to see if you can trick the AI by hiding your true feelings.",
     steps: [
-      "Allow camera and microphone permissions.",
-      "Read out a statement while holding a contrasting facial expression.",
-      "Analyze your Contradiction Score when the AI processes the results."
+      "Allow the app to use your camera and microphone.",
+      "Try saying a happy sentence while making a sad face.",
+      "The AI will try to catch you! It will show you a score of how well you hid your emotions."
     ]
   },
   "/rooms": {
-    title: "Aura Sync Rooms",
-    description: "Connect with others in an emotion-aware multi-user environment.",
+    title: "Aura Rooms",
+    description: "Hang out with other people in special chat rooms that react to everyone's mood.",
     steps: [
-      "Create a new room or join an existing one using an Access Code.",
-      "Observe the real-time emotional synchronicity across participants.",
-      "The AI will mediate the session based on the average emotional climate of the room."
+      "Click 'Create Room' to make your own space, or type a code to join a friend.",
+      "As everyone talks, the AI will change the room's color and music based on the group's mood.",
+      "Have fun chatting together in a shared emotional space!"
     ]
   },
   "/confessions": {
-    title: "AURA Confessions",
-    description: "The AI Emotion Polygraph. Test yourself or a partner.",
+    title: "Confessions Game",
+    description: "An AI lie detector! Test yourself or play with a friend.",
     steps: [
-      "Read the provocative prompt on screen.",
-      "Have the target answer the prompt naturally.",
-      "AURAA will scan for micro-expressions and generate a Verdict Card.",
-      "Download and share your Verdict Card to social media!"
+      "Read the tricky question on the screen.",
+      "Answer the question out loud while looking at the camera.",
+      "The AI will scan your face for tiny expressions and guess if you are lying or telling the truth.",
+      "Save your result card and share it with friends!"
     ]
   },
   "/shapeshifter": {
-    title: "AURA Shapeshifter",
-    description: "Rapid Facial Gymnastics Speedrun.",
+    title: "Face Gym Game",
+    description: "A fast-paced game where you have to make different faces quickly.",
     steps: [
-      "A sequence of extreme emotions will appear.",
-      "You have 10 seconds to perfectly mimic the sequence using your face.",
-      "Complete the sequence as fast as possible to earn a high rank.",
-      "Export your Shapeshifter Card to share your agility score."
+      "The screen will show you an emotion (like 'Happy' or 'Surprised').",
+      "You have 10 seconds to make that exact face at your camera.",
+      "Try to copy the emotions as fast as you can to get a high score!",
+      "Share your final score with friends."
     ]
   }
 };
 
 const defaultGuide: GuideData = {
-  title: "AURAA Interface",
-  description: "Navigate the intuitive interface to interact with advanced sensory AI features.",
+  title: "Page Guide",
+  description: "Learn how to use this page.",
   steps: [
-    "Explore the on-screen options.",
-    "Ensure camera permissions are enabled for modules that require Face Scanning.",
-    "Click anywhere outside dialogs to close them."
+    "Explore the buttons and options on the screen.",
+    "Make sure your camera is allowed if you want the AI to see you.",
+    "Click anywhere outside this box to close it."
   ]
 };
 
@@ -161,7 +161,7 @@ export default function GlobalGuideButton() {
               {/* Body */}
               <div className="p-6">
                 <h3 className="text-xs uppercase tracking-[0.2em] text-white/40 mb-4">
-                  Operation Protocol
+                  How to use this page:
                 </h3>
                 <ul className="space-y-4">
                   {currentGuide.steps.map((step, idx) => (
@@ -189,7 +189,7 @@ export default function GlobalGuideButton() {
                   onClick={() => setIsOpen(false)}
                   className="px-6 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-sm tracking-widest text-white/80 transition-colors"
                 >
-                  ACKNOWLEDGE
+                  GOT IT!
                 </button>
               </div>
             </motion.div>

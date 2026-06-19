@@ -4,7 +4,9 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { getSocket } from "@/lib/socket";
-import FaceScanner from "@/components/FaceScanner";
+import dynamic from "next/dynamic";
+
+const FaceScanner = dynamic(() => import("@/components/FaceScanner"), { ssr: false });
 import SharedViralCard, { ViralCardData } from "@/components/SharedViralCard";
 import { Zap } from "lucide-react";
 

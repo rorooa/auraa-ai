@@ -38,11 +38,26 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "AURAA - Emotion AI",
   description: "Detect. Understand. Support. An AI That Understands You — Beyond Words.",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "AURAA",
+  },
+};
+
+export const viewport = {
+  themeColor: "#020205",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false, // Prevents zooming on input focus (better for native app feel)
 };
 
 import { ThemeProvider } from "@/components/theme-provider";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 import GlobalGuideButton from "@/components/GlobalGuideButton";
+import MobileBottomNav from "@/components/spatial/MobileBottomNav";
+import MobileMaintenanceGuard from "@/components/MobileMaintenanceGuard";
 
 export default function RootLayout({
   children,
@@ -61,8 +76,10 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <GoogleAnalytics />
+          <MobileMaintenanceGuard />
           {children}
           <GlobalGuideButton />
+          <MobileBottomNav />
         </ThemeProvider>
       </body>
     </html>

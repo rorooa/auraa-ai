@@ -217,7 +217,7 @@ export default function EmotionMirrorCard({ isOpen, onClose, result, onPlayAgain
                             <Download size={14} />
                             {isDownloading ? "Saving..." : "Save Card"}
                         </button>
-                        {typeof navigator !== "undefined" && navigator.share && (
+                        {typeof navigator !== "undefined" && 'share' in navigator && (
                             <button
                                 onClick={handleShare}
                                 className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-pink-500 to-violet-500 text-white font-bold uppercase tracking-widest text-xs rounded-full hover:scale-105 transition-transform"
