@@ -46,6 +46,12 @@ fastapi_app = FastAPI()
 os.makedirs("static/avatars", exist_ok=True)
 fastapi_app.mount("/static", StaticFiles(directory="static"), name="static")
 
+@fastapi_app.get("/")
+@fastapi_app.head("/")
+@fastapi_app.get("/health")
+def health_check():
+    return {"status": "ok", "message": "AURAA Backend is running"}
+
 fastapi_app.include_router(auth.router)
 fastapi_app.include_router(reviews.router)
 fastapi_app.include_router(payments.router)
